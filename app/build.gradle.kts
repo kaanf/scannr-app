@@ -72,8 +72,6 @@ android {
         // Dagger Hilt
         implementation(libs.hilt.android)
         implementation(libs.hilt.navigation.compose)
-        implementation(libs.hilt.android)
-        implementation(libs.hilt.navigation.compose)
         ksp(libs.hilt.compiler)
 
         // Room Bundle + Compiler
@@ -114,5 +112,12 @@ android {
         // Debug
         debugImplementation(libs.androidx.ui.tooling)
         debugImplementation(libs.androidx.ui.test.manifest)
+
+
+        /* Navigation */
+        implementation("androidx.navigation:navigation-compose:2.5.3")
+        implementation("io.github.raamcosta.compose-destinations:core:1.8.33-beta")
+        ksp("io.github.raamcosta.compose-destinations:ksp:1.8.33-beta")
+        implementation("io.github.raamcosta.compose-destinations:animations-core:1.7.22-beta")
     }
 }
