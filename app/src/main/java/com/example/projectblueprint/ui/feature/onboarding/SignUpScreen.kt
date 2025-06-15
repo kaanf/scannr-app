@@ -7,47 +7,55 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.projectblueprint.R
-import com.example.projectblueprint.ui.base.DefaultButton
 import com.example.projectblueprint.ui.base.FormInput
+import com.example.projectblueprint.ui.base.DefaultButton
 import com.example.projectblueprint.ui.base.AnimatedCheckboxWithLabel
 import com.example.projectblueprint.ui.theme.*
 
 @Composable
-fun SignInScreen(
-    onSignIn: (String, String, Boolean) -> Unit = { _, _, _ -> },
-    onForgotPassword: () -> Unit = {},
+fun SignUpScreen(
+    onSignUp: (String, String, String, Boolean) -> Unit = { _, _, _, _ -> },
     onGoogleClick: () -> Unit = {},
     onAppleClick: () -> Unit = {},
     onFacebookClick: () -> Unit = {},
+    onSignInClick: () -> Unit = {},
     onBack: () -> Unit = {}
 ) {
+    var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var rememberMe by remember { mutableStateOf(true) }
+    var agreeToTerms by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
             .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(24.dp))
         Row(
@@ -55,7 +63,7 @@ fun SignInScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.ic_left_arrow),
+                painter = painterResource(id = R.drawable.ic_apple),
                 contentDescription = "Back",
                 modifier = Modifier
                     .size(28.dp)
@@ -64,22 +72,34 @@ fun SignInScreen(
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Hello there",
-                style = MaterialTheme.typography.displaySmall,
-                color = Grey900
-            )
-        }
+        Text(
+            text = "Create Account",
+            style = MaterialTheme.typography.displaySmall,
+            color = Grey900
+        )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Please enter your email & password to sign in.",
-            style = MaterialTheme.typography.bodyMedium,
+            text = "Sign up to get started with your account",
+            style = MaterialTheme.typography.bodySmall,
             color = Grey600
         )
         Spacer(modifier = Modifier.height(28.dp))
+        
+        FormInput(
+            label = "Full Name",
+            value = fullName,
+            onValueChange = { fullName = it },
+            placeholder = "Enter your full name",
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = { focusManager.moveFocus(FocusDirection.Down) }
+            )
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        
         FormInput(
             label = "Email",
             value = email,
@@ -88,18 +108,25 @@ fun SignInScreen(
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = { focusManager.moveFocus(FocusDirection.Down) }
             )
         )
         Spacer(modifier = Modifier.height(16.dp))
+        
         FormInput(
             label = "Password",
             value = password,
             onValueChange = { password = it },
-            placeholder = "Enter your password",
+            placeholder = "Create a password",
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { focusManager.clearFocus() }
             ),
             trailingIcon = {
                 IconButton(
@@ -108,7 +135,7 @@ fun SignInScreen(
                 ) {
                     Icon(
                         painter = painterResource(
-                            id = if (passwordVisible) R.drawable.ic_show_eye else R.drawable.ic_hide_eye
+                            id = if (passwordVisible) R.drawable.ic_apple else R.drawable.ic_apple
                         ),
                         contentDescription = if (passwordVisible) "Hide password" else "Show password",
                         tint = Grey600
@@ -116,65 +143,94 @@ fun SignInScreen(
                 }
             }
         )
+        
         Spacer(modifier = Modifier.height(16.dp))
+        
         AnimatedCheckboxWithLabel(
-            checked = rememberMe,
-            onCheckedChange = { rememberMe = it },
+            checked = agreeToTerms,
+            onCheckedChange = { agreeToTerms = it },
             label = {
                 Text(
-                    text = "Remember me",
+                    text = buildAnnotatedString {
+                        append("I agree to the ")
+                        withStyle(style = SpanStyle(color = Primary, fontWeight = FontWeight.SemiBold)) {
+                            append("Terms & Conditions")
+                        }
+                        append(" and ")
+                        withStyle(style = SpanStyle(color = Primary, fontWeight = FontWeight.SemiBold)) {
+                            append("Privacy Policy")
+                        }
+                    },
                     style = MaterialTheme.typography.bodySmall,
                     color = Grey900
                 )
             }
         )
-        Spacer(modifier = Modifier.height(8.dp))
-        Divider(color = Grey100, thickness = 1.dp)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Forgot Password",
-            style = MaterialTheme.typography.bodySmall.copy(color = Primary),
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .clickable { onForgotPassword() }
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        DefaultButton(
+            text = "Create Account",
+            onClick = { onSignUp(fullName, email, password, agreeToTerms) },
+            modifier = Modifier.fillMaxWidth(),
+            backgroundColor = Primary,
+            contentColor = Color.White,
+            height = 56
         )
-        Spacer(modifier = Modifier.height(16.dp))
-        Divider(color = Grey100, thickness = 1.dp)
-        Spacer(modifier = Modifier.height(16.dp))
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
             Divider(modifier = Modifier.weight(1f), color = Grey200)
             Text(
-                text = "  or continue with  ",
+                text = "  or sign up with  ",
                 color = Grey500,
                 style = MaterialTheme.typography.bodySmall
             )
             Divider(modifier = Modifier.weight(1f), color = Grey200)
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            SocialIconButton(icon = R.drawable.ic_google, onClick = onGoogleClick)
-            SocialIconButton(icon = R.drawable.ic_apple, onClick = onAppleClick)
-            SocialIconButton(icon = R.drawable.ic_facebook, onClick = onFacebookClick)
+            SocialSignUpButton(icon = R.drawable.ic_google, onClick = onGoogleClick)
+            SocialSignUpButton(icon = R.drawable.ic_apple, onClick = onAppleClick)
+            SocialSignUpButton(icon = R.drawable.ic_facebook, onClick = onFacebookClick)
         }
+        
         Spacer(modifier = Modifier.weight(1f))
-        DefaultButton(
-            text = "Sign In",
-            onClick = { onSignIn(email, password, rememberMe) },
+        
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 24.dp)
-        )
+                .padding(bottom = 32.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "Already have an account? ",
+                style = MaterialTheme.typography.bodySmall,
+                color = Grey600
+            )
+            Text(
+                text = "Sign In",
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = Primary,
+                    fontWeight = FontWeight.SemiBold
+                ),
+                modifier = Modifier.clickable { onSignInClick() }
+            )
+        }
     }
 }
 
 @Composable
-fun SocialIconButton(icon: Int, onClick: () -> Unit) {
+fun SocialSignUpButton(icon: Int, onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .size(56.dp)
@@ -195,11 +251,10 @@ fun SocialIconButton(icon: Int, onClick: () -> Unit) {
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
-fun SignInScreenPreview() {
+fun SignUpScreenPreview() {
     MaterialTheme {
-        SignInScreen()
+        SignUpScreen()
     }
 }
